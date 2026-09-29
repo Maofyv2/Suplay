@@ -1,0 +1,57 @@
+// Mock order data — replace with API calls when backend is ready
+
+export const mockOrders = [
+  {
+    id: 'ord-001',
+    userId: 'u1',
+    userName: 'Ana Reyes',
+    supplierId: 's1',
+    supplierName: 'TechParts Philippines',
+    items: [
+      { productId: 'p1', name: 'Industrial Ball Bearings (Pack of 50)', qty: 10, unitPrice: 2850, total: 28500 },
+    ],
+    subtotal: 28500,
+    shipping: 500,
+    total: 29000,
+    status: 'delivered',
+    createdAt: '2025-08-12',
+    updatedAt: '2025-08-18',
+    address: 'Makati City, Metro Manila',
+  },
+  {
+    id: 'ord-002',
+    userId: 'u1',
+    userName: 'Ana Reyes',
+    supplierId: 's2',
+    supplierName: 'OfficeMax Distributors',
+    items: [
+      { productId: 'p2', name: 'A4 Bond Paper Ream', qty: 50, unitPrice: 320, total: 16000 },
+      { productId: 'p4', name: 'Ergonomic Office Chair', qty: 5, unitPrice: 8500, total: 42500 },
+    ],
+    subtotal: 58500,
+    shipping: 800,
+    total: 59300,
+    status: 'processing',
+    createdAt: '2025-09-01',
+    updatedAt: '2025-09-02',
+    address: 'Makati City, Metro Manila',
+  },
+  {
+    id: 'ord-003',
+    userId: 'u2',
+    userName: 'Carlos Mendoza',
+    supplierId: 's3',
+    supplierName: 'PackRight Solutions',
+    items: [
+      { productId: 'p3', name: 'Corrugated Cardboard Boxes (25pcs)', qty: 20, unitPrice: 980, total: 19600 },
+      { productId: 'p6', name: 'Thermal Transfer Label Roll', qty: 10, unitPrice: 560, total: 5600 },
+    ],
+    subtotal: 25200,
+    shipping: 600,
+    total: 25800,
+    status: 'shipped',
+    createdAt: '2025-09-05',
+    updatedAt: '2025-09-07',
+    address: 'Davao City, Davao del Sur',
+  },
+];

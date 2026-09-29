@@ -1,0 +1,650 @@
+/* ============================================================
+   Suplay B2B Marketplace — Global Design System
+   ============================================================ */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Design Tokens ── */
+:root {
+  /* Brand palette */
+  --su-primary:        #2563eb;
+  --su-primary-dark:   #1d4ed8;
+  --su-primary-light:  #dbeafe;
+  --su-accent:         #0ea5e9;
+
+  /* Neutrals */
+  --su-bg:             #f8fafc;
+  --su-surface:        #ffffff;
+  --su-border:         #e2e8f0;
+  --su-text:           #334155;
+  --su-text-muted:     #64748b;
+  --su-text-heading:   #0f172a;
+
+  /* Status */
+  --su-success:        #22c55e;
+  --su-warning:        #f59e0b;
+  --su-danger:         #ef4444;
+  --su-info:           #3b82f6;
+
+  /* Spacing & shape */
+  --su-radius:         0.625rem;
+  --su-radius-lg:      1rem;
+  --su-shadow-sm:      0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --su-shadow:         0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.04);
+  --su-shadow-lg:      0 10px 30px rgba(0,0,0,.10), 0 4px 10px rgba(0,0,0,.05);
+
+  /* Typography */
+  --su-font:           'Inter', system-ui, sans-serif;
+}
+
+/* ── Base Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--su-font);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--su-text);
+  background-color: var(--su-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--su-text-heading);
+  font-family: var(--su-font);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* Override Bootstrap's default font */
+.btn, .form-control, .form-select, .input-group-text, .badge, .nav-link {
+  font-family: var(--su-font);
+}
+
+/* ── Navbar ── */
+.suplay-navbar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--su-border);
+  padding: 0.75rem 0;
+  box-shadow: var(--su-shadow-sm);
+  z-index: 1030;
+}
+
+.suplay-navbar .navbar-brand {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--su-text-heading);
+  letter-spacing: -0.5px;
+}
+
+.suplay-navbar .nav-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--su-text-muted);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--su-radius);
+  transition: color 0.2s, background 0.2s;
+}
+
+.suplay-navbar .nav-link:hover,
+.suplay-navbar .nav-link.active {
+  color: var(--su-primary);
+  background-color: var(--su-primary-light);
+}
+
+/* ── Avatar ── */
+.suplay-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--su-primary), var(--su-accent));
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.suplay-avatar.suplay-avatar-lg {
+  width: 72px;
+  height: 72px;
+  font-size: 1.75rem;
+}
+
+/* ── Hero Section ── */
+.suplay-hero {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);
+  border-bottom: 1px solid var(--su-border);
+}
+
+[data-theme="dark"] .suplay-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #0c1a2e 50%, #111827 100%);
+  border-bottom-color: var(--su-border);
+}
+
+/* ── Feature Icon ── */
+.suplay-feature-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--su-radius-lg);
+  background-color: var(--su-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Product Card ── */
+.suplay-product-card {
+  border-radius: var(--su-radius-lg) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.suplay-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--su-shadow-lg) !important;
+}
+
+.suplay-product-thumb {
+  height: 160px;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Supplier Card ── */
+.suplay-supplier-card {
+  border-radius: var(--su-radius-lg) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.suplay-supplier-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--su-shadow-lg) !important;
+}
+
+.suplay-supplier-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--su-radius);
+  background: var(--su-primary-light);
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.suplay-sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: var(--su-surface);
+  border-right: 1px solid var(--su-border);
+  padding: 1.5rem 1rem;
+  flex-shrink: 0;
+}
+
+.suplay-sidebar-brand {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--su-text-heading);
+  padding: 0 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.suplay-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--su-radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--su-text-muted);
+  text-decoration: none;
+  transition: color 0.15s, background 0.15s;
+  margin-bottom: 2px;
+}
+
+.suplay-sidebar-link:hover {
+  color: var(--su-primary);
+  background-color: var(--su-primary-light);
+}
+
+.suplay-sidebar-link.active {
+  color: var(--su-primary);
+  background-color: var(--su-primary-light);
+  font-weight: 600;
+}
+
+/* ── Filter Bar ── */
+.suplay-filter-bar {
+  background-color: var(--su-surface) !important;
+  border-color: var(--su-border) !important;
+  border-radius: var(--su-radius-lg) !important;
+}
+
+/* ── Footer ── */
+.suplay-footer {
+  background: #0f172a;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.suplay-footer-link {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.suplay-footer-link:hover {
+  color: #ffffff;
+}
+
+.suplay-social-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--su-radius);
+  background: rgba(255,255,255,0.08);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.suplay-social-icon:hover {
+  background: var(--su-primary);
+  color: white;
+}
+
+/* ── Bootstrap overrides ── */
+.btn-primary {
+  background-color: var(--su-primary);
+  border-color: var(--su-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--su-primary-dark);
+  border-color: var(--su-primary-dark);
+}
+
+.btn-outline-primary {
+  color: var(--su-primary);
+  border-color: var(--su-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--su-primary);
+  border-color: var(--su-primary);
+}
+
+.text-primary { color: var(--su-primary) !important; }
+.bg-primary   { background-color: var(--su-primary) !important; }
+
+.card {
+  border-radius: var(--su-radius-lg) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--su-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* ── Utility ── */
+.min-w-0 { min-width: 0; }
+
+/* ── Smooth page transitions ── */
+main {
+  animation: fadeInUp 0.25s ease both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Modal backdrop fix ── */
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .suplay-sidebar {
+    display: none;
+  }
+}
+
+/* ── Remove background icon in form validation — use text only ── */
+.form-control.is-invalid,
+.was-validated .form-control:invalid,
+.form-select.is-invalid,
+.was-validated .form-select:invalid {
+  background-image: none !important;
+  padding-right: 0.75rem !important;
+}
+
+/* ============================================================
+   Dark Mode — [data-theme="dark"] on <html>
+   ============================================================ */
+[data-theme="dark"] {
+  /* Override design tokens */
+  --su-bg:             #0f172a;
+  --su-surface:        #1e293b;
+  --su-border:         #334155;
+  --su-text:           #cbd5e1;
+  --su-text-muted:     #94a3b8;
+  --su-text-heading:   #f1f5f9;
+  --su-primary-light:  rgba(37, 99, 235, 0.15);
+  --su-shadow-sm:      0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --su-shadow:         0 4px 12px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3);
+  --su-shadow-lg:      0 10px 30px rgba(0,0,0,.5), 0 4px 10px rgba(0,0,0,.3);
+
+  color-scheme: dark;
+}
+
+/* Body & headings */
+[data-theme="dark"] body {
+  background-color: var(--su-bg);
+  color: var(--su-text);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--su-text-heading);
+}
+
+/* Navbar */
+[data-theme="dark"] .suplay-navbar {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom-color: var(--su-border);
+}
+
+[data-theme="dark"] .suplay-navbar .navbar-brand {
+  color: var(--su-text-heading);
+}
+
+/* Bootstrap Cards */
+[data-theme="dark"] .card {
+  background-color: var(--su-surface) !important;
+  border-color: var(--su-border) !important;
+  color: var(--su-text);
+}
+
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .card-footer {
+  background-color: rgba(255,255,255,0.03) !important;
+  border-color: var(--su-border) !important;
+}
+
+/* Bootstrap Form Controls */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+  background-color: #1e293b;
+  border-color: var(--su-border);
+  color: var(--su-text);
+}
+
+[data-theme="dark"] .form-control::placeholder {
+  color: #475569;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  background-color: #1e293b;
+  border-color: var(--su-primary);
+  color: var(--su-text);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .form-label {
+  color: var(--su-text);
+}
+
+[data-theme="dark"] .form-text {
+  color: var(--su-text-muted);
+}
+
+/* Bootstrap Dropdowns */
+[data-theme="dark"] .dropdown-menu {
+  background-color: #1e293b;
+  border-color: var(--su-border);
+}
+
+[data-theme="dark"] .dropdown-item {
+  color: var(--su-text);
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+  background-color: rgba(255,255,255,0.06);
+  color: var(--su-text-heading);
+}
+
+[data-theme="dark"] .dropdown-divider {
+  border-color: var(--su-border);
+}
+
+/* Bootstrap Tables */
+[data-theme="dark"] .table {
+  --bs-table-color: var(--su-text);
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(255,255,255,0.03);
+  --bs-table-hover-bg: rgba(255,255,255,0.05);
+  --bs-table-border-color: var(--su-border);
+  color: var(--su-text);
+}
+
+[data-theme="dark"] .table th {
+  color: var(--su-text-muted);
+  border-color: var(--su-border);
+}
+
+[data-theme="dark"] .table td {
+  border-color: var(--su-border);
+}
+
+/* Bootstrap Badges */
+[data-theme="dark"] .bg-light {
+  background-color: #334155 !important;
+  color: var(--su-text) !important;
+}
+
+[data-theme="dark"] .bg-primary-subtle {
+  background-color: rgba(37, 99, 235, 0.2) !important;
+}
+
+[data-theme="dark"] .text-dark {
+  color: var(--su-text-heading) !important;
+}
+
+[data-theme="dark"] .text-muted {
+  color: var(--su-text-muted) !important;
+}
+
+/* Bootstrap Alerts */
+[data-theme="dark"] .alert {
+  border-color: var(--su-border);
+}
+
+[data-theme="dark"] .alert-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+[data-theme="dark"] .alert-success {
+  background-color: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+[data-theme="dark"] .alert-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .alert-info {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+
+/* Bootstrap Modals */
+[data-theme="dark"] .modal-content {
+  background-color: #1e293b;
+  border-color: var(--su-border);
+  color: var(--su-text);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+  border-color: var(--su-border);
+}
+
+[data-theme="dark"] .modal-title {
+  color: var(--su-text-heading);
+}
+
+[data-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Bootstrap List Groups */
+[data-theme="dark"] .list-group-item {
+  background-color: var(--su-surface);
+  border-color: var(--su-border);
+  color: var(--su-text);
+}
+
+/* Bootstrap Borders */
+[data-theme="dark"] .border,
+[data-theme="dark"] .border-top,
+[data-theme="dark"] .border-bottom,
+[data-theme="dark"] .border-start,
+[data-theme="dark"] .border-end {
+  border-color: var(--su-border) !important;
+}
+
+/* Bootstrap Nav Tabs / Pills */
+[data-theme="dark"] .nav-tabs {
+  border-color: var(--su-border);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link {
+  color: var(--su-text-muted);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link.active {
+  background-color: var(--su-surface);
+  border-color: var(--su-border) var(--su-border) var(--su-surface);
+  color: var(--su-text-heading);
+}
+
+/* Bootstrap Input Group */
+[data-theme="dark"] .input-group-text {
+  background-color: #283548;
+  border-color: var(--su-border);
+  color: var(--su-text-muted);
+}
+
+/* Bootstrap Buttons — outline variants */
+[data-theme="dark"] .btn-outline-secondary {
+  color: var(--su-text-muted);
+  border-color: var(--su-border);
+}
+
+[data-theme="dark"] .btn-outline-secondary:hover {
+  background-color: rgba(255,255,255,0.08);
+  border-color: var(--su-border);
+  color: var(--su-text);
+}
+
+/* Sidebar */
+[data-theme="dark"] .suplay-sidebar {
+  background: var(--su-surface);
+  border-right-color: var(--su-border);
+}
+
+/* Product card thumbnails */
+[data-theme="dark"] .suplay-product-thumb {
+  background: linear-gradient(135deg, #1e293b, #283548);
+}
+
+/* Page backgrounds */
+[data-theme="dark"] .bg-white {
+  background-color: var(--su-surface) !important;
+}
+
+[data-theme="dark"] .bg-light {
+  background-color: #1a2535 !important;
+}
+
+/* User pill in navbar */
+[data-theme="dark"] .btn.bg-light {
+  background-color: rgba(255,255,255,0.07) !important;
+  color: var(--su-text) !important;
+}
+
+/* HR / Dividers */
+[data-theme="dark"] hr {
+  border-color: var(--su-border);
+  opacity: 1;
+}
+
+/* Scrollbar (Chrome/Safari) */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Auth pages dark mode */
+[data-theme="dark"] main[style*="linear-gradient(135deg, #f0f4ff"] {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+}
+
+/* Transition for smooth theme switching */
+body,
+.card,
+.navbar,
+.form-control,
+.form-select,
+.dropdown-menu,
+.modal-content,
+.suplay-sidebar {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+
