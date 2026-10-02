@@ -9,7 +9,7 @@ function AddProduct() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const [form, setForm] = useState({ name: '', category: '', price: '', stock: '', unit: '', moq: '', description: '' });
+  const [form, setForm] = useState({ name: '', category: '', price: '', stock: '', moq: '', description: '' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -121,15 +121,12 @@ function AddProduct() {
                 <div className="col-12">
                   <Input id="ap-name" label="Product Name *" name="name" value={form.name} onChange={handleChange} required placeholder="e.g. Industrial Ball Bearings" />
                 </div>
-                <div className="col-md-6">
+                <div className="col-12">
                   <label htmlFor="ap-category" className="form-label fw-medium">Category *</label>
                   <select id="ap-category" name="category" className="form-select" value={form.category} onChange={handleChange} required>
                     <option value="">Select category</option>
                     {PRODUCT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
-                </div>
-                <div className="col-md-6">
-                  <Input id="ap-unit" label="Unit *" name="unit" value={form.unit} onChange={handleChange} required placeholder="piece, pack, ream…" />
                 </div>
                 <div className="col-md-4">
                   <Input id="ap-price" label="Price (₱) *" name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />

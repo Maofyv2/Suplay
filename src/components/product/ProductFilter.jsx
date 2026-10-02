@@ -66,7 +66,7 @@ function ProductFilter({ filters, onChange }) {
         >
           <option value="">All Suppliers</option>
           {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
+            <option key={s.id || s._id} value={s.id || s._id}>{s.name}</option>
           ))}
         </select>
       </div>

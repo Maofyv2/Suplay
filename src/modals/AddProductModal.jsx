@@ -15,7 +15,6 @@ function AddProductModal({ isOpen, onClose, onSubmit }) {
     category: '',
     price: '',
     stock: '',
-    unit: '',
     moq: '',
     description: '',
   });
@@ -118,15 +117,12 @@ function AddProductModal({ isOpen, onClose, onSubmit }) {
               <div className="col-12">
                 <Input id="add-name" label="Product Name *" name="name" value={form.name} onChange={handleChange} required placeholder="e.g. Industrial Ball Bearings (Pack of 50)" />
               </div>
-              <div className="col-md-6">
+              <div className="col-12">
                 <label htmlFor="add-category" className="form-label fw-medium">Category *</label>
                 <select id="add-category" name="category" className="form-select" value={form.category} onChange={handleChange} required>
                   <option value="">Select category</option>
                   {PRODUCT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-              </div>
-              <div className="col-md-6">
-                <Input id="add-unit" label="Unit *" name="unit" value={form.unit} onChange={handleChange} required placeholder="e.g. piece, pack, ream" />
               </div>
               <div className="col-md-4">
                 <Input id="add-price" label="Price (₱) *" name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />

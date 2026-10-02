@@ -3,7 +3,8 @@ import User from '../models/User.js';
 export async function getUsers(req, res) {
   try {
     const { role, status, search } = req.query;
-    const query = {};
+    // Exclude admin-role users — admins should not be manageable
+    const query = { role: { $ne: 'admin' } };
 
     if (role) query.role = role;
     if (status) query.status = status;

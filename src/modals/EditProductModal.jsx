@@ -11,7 +11,7 @@ import { PRODUCT_CATEGORIES } from '../utils/constants';
  * @param {function} onSubmit - Receives updated form data.
  */
 function EditProductModal({ isOpen, product, onClose, onSubmit }) {
-  const [form, setForm] = useState({ name: '', category: '', price: '', stock: '', unit: '', moq: '', description: '' });
+  const [form, setForm] = useState({ name: '', category: '', price: '', stock: '', moq: '', description: '' });
   const [loading, setLoading] = useState(false);
 
   // Sync form with product prop when it changes
@@ -22,7 +22,6 @@ function EditProductModal({ isOpen, product, onClose, onSubmit }) {
         category: product.category || '',
         price: product.price ?? '',
         stock: product.stock ?? '',
-        unit: product.unit || '',
         moq: product.moq ?? '',
         description: product.description || '',
       });
@@ -126,15 +125,12 @@ function EditProductModal({ isOpen, product, onClose, onSubmit }) {
               <div className="col-12">
                 <Input id="edit-name" label="Product Name *" name="name" value={form.name} onChange={handleChange} required />
               </div>
-              <div className="col-md-6">
+              <div className="col-12">
                 <label htmlFor="edit-category" className="form-label fw-medium">Category *</label>
                 <select id="edit-category" name="category" className="form-select" value={form.category} onChange={handleChange} required>
                   <option value="">Select category</option>
                   {PRODUCT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
-              </div>
-              <div className="col-md-6">
-                <Input id="edit-unit" label="Unit *" name="unit" value={form.unit} onChange={handleChange} required />
               </div>
               <div className="col-md-4">
                 <Input id="edit-price" label="Price (₱) *" name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />

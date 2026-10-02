@@ -190,7 +190,7 @@ function ManageProducts() {
                       <td className="text-muted small">{product.supplierName}</td>
                       <td className="fw-medium">{formatPrice(product.price)}</td>
                       <td>
-                        {product.stock} {product.unit}
+                        {product.stock}
                       </td>
                       <td>
                         <button

@@ -155,13 +155,36 @@ export async function updateOrderStatus(req, res) {
     const { status } = req.body;
     const dateStr = new Date().toISOString().slice(0, 10);
 
-    const updated = await Order.findOneAndUpdate(
-      { $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] },
-      { $set: { status, updatedAt: dateStr } },
-      { new: true }
-    );
-    if (!updated) return res.status(404).json({ message: 'Order not found' });
-    res.json(updated);
+    const existing = await Order.findOne({ $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] });
+    if (!existing) return res.status(404).json({ message: 'Order not found' });
+
+    // Enforce status flow for suppliers (or any non-admin client)
+    if (req.user?.role !== 'admin') {
+      const current = (existing.status || '').toLowerCase();
+      const target = (status || '').toLowerCase();
+
+      if (current === 'delivered' || current === 'cancelled') {
+        return res.status(400).json({ message: `Order status is final (${existing.status}) and cannot be changed.` });
+      }
+
+      if (current === 'pending') {
+        if (target !== 'processing' && target !== 'cancelled') {
+          return res.status(400).json({ message: 'Pending orders can only be updated to Processing or Cancelled.' });
+        }
+      } else if (current === 'processing') {
+        if (target !== 'delivered') {
+          return res.status(400).json({ message: 'Processing orders can only be updated to Delivered.' });
+        }
+      } else {
+        return res.status(400).json({ message: 'Invalid status transition.' });
+      }
+    }
+
+    existing.status = status;
+    existing.updatedAt = dateStr;
+    await existing.save();
+
+    res.json(existing);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

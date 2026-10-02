@@ -9,7 +9,7 @@ function ProductGrid({ products = [], loading = false, onViewDetails }) {
     return (
       <EmptyState
         icon="bi-box-seam"
-        title="No products found"
+        title="No products yet"
         description="Try adjusting your filters or search query."
       />
     );

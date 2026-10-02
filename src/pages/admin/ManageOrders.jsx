@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getOrders, updateOrderStatus } from '../../services/orderService';
+import { getOrders } from '../../services/orderService';
 import { formatPrice } from '../../utils/formatPrice';
 import { useApp } from '../../context/AppContext';
 import OrderDetailsModal from '../../modals/OrderDetailsModal';
@@ -26,18 +26,7 @@ function ManageOrders() {
     loadOrders();
   }, []);
 
-  const handleStatusChange = async (orderId, newStatus) => {
-    try {
-      const updated = await updateOrderStatus(orderId, newStatus);
-      setOrders((prev) => prev.map((o) => (o.id === orderId ? updated : o)));
-      if (selectedOrder?.id === orderId) {
-        setSelectedOrder(updated);
-      }
-      showToast(`Order #${orderId} status changed to ${newStatus}.`, 'success');
-    } catch (err) {
-      showToast(err.message || 'Failed to update order status.', 'error');
-    }
-  };
+
 
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
@@ -132,7 +121,7 @@ function ManageOrders() {
                   <th>Total</th>
                   <th>Status</th>
                   <th>Date</th>
-                  <th className="text-end pe-4">Actions</th>
+                  <th className="text-end pe-4">Details</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,18 +134,15 @@ function ManageOrders() {
                     <td className="text-muted small">{order.supplierName}</td>
                     <td className="fw-semibold">{formatPrice(order.total)}</td>
                     <td>
-                      <select
-                        className="form-select form-select-sm"
-                        style={{ minWidth: 130 }}
-                        value={order.status}
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                      >
-                        {Object.values(ORDER_STATUS).map((s) => (
-                          <option key={s} value={s}>
-                            {s.charAt(0).toUpperCase() + s.slice(1)}
-                          </option>
-                        ))}
-                      </select>
+                      <span className={`badge rounded-pill px-2 py-1 ${
+                        order.status === 'delivered' ? 'bg-success-subtle text-success' :
+                        order.status === 'cancelled' ? 'bg-danger-subtle text-danger' :
+                        order.status === 'shipped' ? 'bg-primary-subtle text-primary' :
+                        order.status === 'processing' ? 'bg-info-subtle text-info' :
+                        'bg-warning-subtle text-warning'
+                      }`}>
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </span>
                     </td>
                     <td className="text-muted small">{order.createdAt}</td>
                     <td className="text-end pe-3">
@@ -178,10 +164,7 @@ function ManageOrders() {
 
       <OrderDetailsModal
         order={selectedOrder}
-        onClose={() => {
-          setSelectedOrder(null);
-          loadOrders();
-        }}
+        onClose={() => setSelectedOrder(null)}
       />
     </main>
   );

@@ -51,7 +51,6 @@ function CartItem({ item }) {
         </p>
         <div className="d-flex align-items-center gap-2 small">
           <span className="text-primary fw-bold">{formatPrice(item.price)}</span>
-          <span className="text-muted">/ {item.unit}</span>
           {item.moq && item.moq > 1 && (
             <span className="badge bg-light text-secondary border">MOQ: {item.moq}</span>
           )}

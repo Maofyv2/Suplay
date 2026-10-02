@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema(
     category: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
     stock: { type: Number, required: true, min: 0, default: 0 },
-    unit: { type: String, required: true, default: 'piece' },
+    unit: { type: String, required: false, default: '' },
     moq: { type: Number, required: true, min: 1, default: 1 },
     supplierId: { type: String, required: true },
     supplierName: { type: String, required: true },

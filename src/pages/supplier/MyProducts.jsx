@@ -216,7 +216,7 @@ function MyProducts() {
                           <td className="fw-medium">{formatPrice(product.price)}</td>
                           <td>
                             <span className={product.stock < 10 ? 'text-danger fw-bold' : ''}>
-                              {product.stock} {product.unit}
+                              {product.stock}
                               {product.stock < 10 && (
                                 <i
                                   className="bi bi-exclamation-triangle ms-1"

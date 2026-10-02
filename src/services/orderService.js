@@ -1,6 +1,7 @@
 // Order Service — calls Express/MongoDB API with localStorage fallback
 import { apiFetch } from './api';
 import { mockOrders } from '../data/orders';
+import { getCurrentUser } from './authService';
 
 const STORAGE_KEY = 'suplay_orders';
 
@@ -105,6 +106,25 @@ export async function createOrder(data) {
 }
 
 export async function updateOrderStatus(id, status) {
+  const currentUser = getCurrentUser();
+  if (currentUser?.role === 'supplier') {
+    const orders = getStoredOrders();
+    const existing = orders.find((o) => String(o.id) === String(id) || String(o._id) === String(id));
+    if (existing) {
+      const current = (existing.status || '').toLowerCase();
+      const target = (status || '').toLowerCase();
+      if (current === 'delivered' || current === 'cancelled') {
+        throw new Error(`Order status is final (${existing.status}) and cannot be changed.`);
+      }
+      if (current === 'pending' && target !== 'processing' && target !== 'cancelled') {
+        throw new Error('Pending orders can only be updated to Processing or Cancelled.');
+      }
+      if (current === 'processing' && target !== 'delivered') {
+        throw new Error('Processing orders can only be updated to Delivered.');
+      }
+    }
+  }
+
   try {
     const updated = await apiFetch(`/orders/${id}/status`, {
       method: 'PATCH',
@@ -118,6 +138,7 @@ export async function updateOrderStatus(id, status) {
     }
     return updated;
   } catch (err) {
+    if (err.status) throw err;
     const orders = getStoredOrders();
     const index = orders.findIndex((o) => String(o.id) === String(id) || String(o._id) === String(id));
     if (index === -1) throw new Error('Order not found.', { cause: err });

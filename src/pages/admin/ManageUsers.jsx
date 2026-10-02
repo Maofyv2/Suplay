@@ -51,6 +51,8 @@ function ManageUsers() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
+      // Exclude admin-role users — admins should not manage other admins
+      if (u.role === 'admin') return false;
       const matchesSearch =
         !search ||
         u.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -98,7 +100,6 @@ function ManageUsers() {
               onChange={(e) => setRoleFilter(e.target.value)}
             >
               <option value="">All Roles</option>
-              <option value="admin">Admin</option>
               <option value="supplier">Supplier</option>
               <option value="user">Customer</option>
             </select>

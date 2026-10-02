@@ -150,18 +150,39 @@ function SupplierOrders() {
                         <td className="fw-medium">{order.userName}</td>
                         <td className="fw-semibold">{formatPrice(order.total)}</td>
                         <td>
-                          <select
-                            className="form-select form-select-sm"
-                            style={{ minWidth: 130 }}
-                            value={order.status}
-                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                          >
-                            {Object.values(ORDER_STATUS).map((s) => (
-                              <option key={s} value={s}>
-                                {s.charAt(0).toUpperCase() + s.slice(1)}
+                          {order.status === 'pending' ? (
+                            <select
+                              className="form-select form-select-sm"
+                              style={{ minWidth: 130 }}
+                              value={order.status}
+                              onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            >
+                              <option value="pending" disabled>Pending</option>
+                              <option value="processing">Processing</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          ) : order.status === 'processing' ? (
+                            <select
+                              className="form-select form-select-sm"
+                              style={{ minWidth: 130 }}
+                              value={order.status}
+                              onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            >
+                              <option value="processing" disabled>Processing</option>
+                              <option value="delivered">Delivered</option>
+                            </select>
+                          ) : (
+                            <select
+                              className="form-select form-select-sm"
+                              style={{ minWidth: 130 }}
+                              value={order.status}
+                              disabled
+                            >
+                              <option value={order.status}>
+                                {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : ''}
                               </option>
-                            ))}
-                          </select>
+                            </select>
+                          )}
                         </td>
                         <td className="text-muted small">{order.createdAt}</td>
                         <td className="text-end pe-3">

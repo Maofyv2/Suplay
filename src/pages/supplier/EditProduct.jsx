@@ -37,7 +37,7 @@ function EditProduct() {
         return;
       }
 
-      setForm({ name: p.name, category: p.category, price: p.price, stock: p.stock, unit: p.unit, moq: p.moq, description: p.description || '' });
+      setForm({ name: p.name, category: p.category, price: p.price, stock: p.stock, moq: p.moq, description: p.description || '' });
       if (p.image) setExistingImage(p.image);
       setLoading(false);
     }).catch(() => {
@@ -148,14 +148,11 @@ function EditProduct() {
                 <div className="col-12">
                   <Input id="ep-name" label="Product Name *" name="name" value={form.name} onChange={handleChange} required />
                 </div>
-                <div className="col-md-6">
+                <div className="col-12">
                   <label htmlFor="ep-category" className="form-label fw-medium">Category *</label>
                   <select id="ep-category" name="category" className="form-select" value={form.category} onChange={handleChange} required>
                     {PRODUCT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
-                </div>
-                <div className="col-md-6">
-                  <Input id="ep-unit" label="Unit *" name="unit" value={form.unit} onChange={handleChange} required />
                 </div>
                 <div className="col-md-4">
                   <Input id="ep-price" label="Price (₱) *" name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required />

@@ -33,8 +33,8 @@ function SupplierCard({ supplier, onViewDetails }) {
 
         {/* Meta */}
         <div className="d-flex gap-3 mb-3 small text-muted">
-          <span><i className="bi bi-star-fill text-warning me-1" />{supplier.rating}</span>
-          <span><i className="bi bi-box-seam me-1" />{supplier.totalProducts} products</span>
+          <span><i className="bi bi-star-fill text-warning me-1" />{supplier.rating || '—'}</span>
+          <span><i className="bi bi-box-seam me-1" />{supplier.totalProducts ? `${supplier.totalProducts} products` : 'No products yet'}</span>
         </div>
 
         <div className="d-flex gap-2">

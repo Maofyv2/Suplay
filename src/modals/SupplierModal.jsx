@@ -103,26 +103,32 @@ function SupplierModal({ supplier, onClose }) {
           <p className="text-muted mb-4 small lh-base">{supplier.description}</p>
 
           {/* Stats */}
-          <div className="row g-2 mb-4">
+          <div className="row g-2 mb-3">
             <div className="col-4 text-center">
               <div className="p-3 bg-light rounded-3">
-                <p className="fw-bold text-dark mb-0 fs-6">{supplier.rating}</p>
+                <p className="fw-bold text-dark mb-0 fs-6">{supplier.rating || '—'}</p>
                 <p className="small text-muted mb-0">Rating</p>
               </div>
             </div>
             <div className="col-4 text-center">
               <div className="p-3 bg-light rounded-3">
-                <p className="fw-bold text-dark mb-0 fs-6">{supplier.totalProducts}</p>
+                <p className="fw-bold text-dark mb-0 fs-6">{supplier.totalProducts || 0}</p>
                 <p className="small text-muted mb-0">Products</p>
               </div>
             </div>
             <div className="col-4 text-center">
               <div className="p-3 bg-light rounded-3">
-                <p className="fw-bold text-dark mb-0 fs-6">{supplier.joinedAt}</p>
+                <p className="fw-bold text-dark mb-0 fs-6">{supplier.joinedAt || '—'}</p>
                 <p className="small text-muted mb-0">Joined</p>
               </div>
             </div>
           </div>
+
+          {(!supplier.totalProducts || supplier.totalProducts === 0) && (
+            <div className="alert alert-light border text-center py-2 mb-4 text-muted small">
+              <i className="bi bi-box-seam me-2" />No products yet
+            </div>
+          )}
 
           {/* Contact & Actions */}
           <div className="d-flex flex-column gap-2 pt-2">

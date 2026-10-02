@@ -1,6 +1,7 @@
 // Auth Service — calls Express/MongoDB API with mock data fallback
 import { apiFetch } from './api';
 import { mockUsers } from '../data/users';
+import { mockSuppliers } from '../data/suppliers';
 
 const USERS_STORAGE_KEY = 'suplay_users';
 const SUPPLIERS_STORAGE_KEY = 'suplay_suppliers';
@@ -88,7 +89,7 @@ export async function register(data) {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(nextUsers));
 
       if (newUser.role === 'supplier') {
-        const suppliers = readStoredList(SUPPLIERS_STORAGE_KEY);
+        const suppliers = readStoredList(SUPPLIERS_STORAGE_KEY, mockSuppliers);
         const newSupplier = {
           id: supplierId,
           supplierId,
@@ -104,6 +105,7 @@ export async function register(data) {
           logo: null,
           joinedAt: newUser.createdAt,
         };
+        mockSuppliers.push(newSupplier);
         localStorage.setItem(
           SUPPLIERS_STORAGE_KEY,
           JSON.stringify([...suppliers.filter((s) => s.id !== supplierId), newSupplier])

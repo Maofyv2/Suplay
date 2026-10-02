@@ -48,7 +48,7 @@ function Suppliers() {
       ) : (
         <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
           {filtered.map((supplier) => (
-            <div className="col" key={supplier.id}>
+            <div className="col" key={supplier.id || supplier._id}>
               <SupplierCard supplier={supplier} onViewDetails={setSelectedSupplier} />
             </div>
           ))}

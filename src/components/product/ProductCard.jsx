@@ -41,9 +41,8 @@ function ProductCard({ product, onViewDetails }) {
         <div className="mt-auto">
           <div className="d-flex align-items-baseline gap-1 mb-1">
             <span className="fw-bold fs-5 text-primary">{formatPrice(product.price)}</span>
-            <span className="text-muted small">/ {product.unit}</span>
           </div>
-          <p className="text-muted small mb-3">MOQ: {product.moq} {product.unit}</p>
+          <p className="text-muted small mb-3">MOQ: {product.moq}</p>
 
           <div className="d-flex gap-2">
             <button

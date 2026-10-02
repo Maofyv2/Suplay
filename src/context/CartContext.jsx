@@ -58,7 +58,6 @@ export function CartProvider({ children }) {
           productId: product.id,
           name: product.name,
           price: product.price,
-          unit: product.unit || 'piece',
           supplierId: product.supplierId,
           supplierName: product.supplierName || 'Supplier',
           image: product.image || null,

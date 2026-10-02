@@ -92,10 +92,10 @@ function ProductModal({ product, onClose }) {
 
     if (raw < minQty) {
       setQuantity(minQty);
-      setQuantityError(`Minimum order quantity is ${minQty} ${product.unit}.`);
+      setQuantityError(`Minimum order quantity is ${minQty}.`);
     } else if (raw > maxQty) {
       setQuantity(maxQty);
-      setQuantityError(`Only ${maxQty} ${product.unit} are currently available.`);
+      setQuantityError(`Only ${maxQty} items are currently available.`);
     } else {
       setQuantity(raw);
       setQuantityError('');
@@ -132,7 +132,7 @@ function ProductModal({ product, onClose }) {
     addToCart(product, Number(quantity));
 
     showToast(
-      `Added ${quantity} ${product.unit}(s) of "${product.name}" to cart!`,
+      `Added ${quantity} of "${product.name}" to cart!`,
       'success'
     );
 
@@ -258,10 +258,6 @@ function ProductModal({ product, onClose }) {
                 <div className="fs-3 fw-bold text-primary">
                   {formatPrice(product.price)}
                 </div>
-
-                <small className="text-muted">
-                  per {product.unit}
-                </small>
               </div>
 
               {/* DESCRIPTION */}
@@ -284,7 +280,7 @@ function ProductModal({ product, onClose }) {
                   </span>
 
                   <span className="fw-semibold small">
-                    {product.moq} {product.unit}
+                    {product.moq}
                   </span>
                 </div>
 
@@ -294,7 +290,7 @@ function ProductModal({ product, onClose }) {
                   </span>
 
                   <span className="fw-semibold small">
-                    {product.stock} {product.unit}
+                    {product.stock}
                   </span>
                 </div>
 
