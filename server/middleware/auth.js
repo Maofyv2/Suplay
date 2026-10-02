@@ -37,3 +37,24 @@ export function authorize(...roles) {
     next();
   };
 }
+
+export async function optionalAuth(req, res, next) {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) return next();
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'suplay_secret_key');
+    const user = await User.findById(decoded.id).select('-password');
+    if (user && user.status !== 'suspended') {
+      req.user = user;
+    }
+  } catch (error) {
+    // ignore invalid/mock token during optional authentication
+  }
+  next();
+}
+

@@ -6,10 +6,12 @@ import Loading from '../../components/common/Loading';
 import { PRODUCT_CATEGORIES, ROUTES } from '../../utils/constants';
 
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 
 function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const { showToast } = useApp();
   const fileInputRef = useRef(null);
   const [form, setForm] = useState(null);
@@ -21,11 +23,28 @@ function EditProduct() {
 
   useEffect(() => {
     getProductById(id).then((p) => {
+      const myId = currentUser?.id || currentUser?._id;
+      const mySupId = currentUser?.supplierId;
+      const pSup = String(p.supplierId || '');
+      const isOwner =
+        currentUser?.role === 'admin' ||
+        (mySupId && pSup === String(mySupId)) ||
+        (myId && pSup === String(myId));
+
+      if (!isOwner) {
+        showToast('You are not authorized to edit this product.', 'error');
+        navigate(ROUTES.SUPPLIER_MY_PRODUCTS, { replace: true });
+        return;
+      }
+
       setForm({ name: p.name, category: p.category, price: p.price, stock: p.stock, unit: p.unit, moq: p.moq, description: p.description || '' });
       if (p.image) setExistingImage(p.image);
       setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [id]);
+    }).catch(() => {
+      showToast('Product not found.', 'error');
+      navigate(ROUTES.SUPPLIER_MY_PRODUCTS, { replace: true });
+    });
+  }, [id, currentUser, navigate, showToast]);
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 

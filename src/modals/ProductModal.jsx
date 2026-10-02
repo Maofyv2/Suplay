@@ -14,16 +14,18 @@ function ProductModal({ product, onClose }) {
   const { showToast } = useApp();
   const navigate = useNavigate();
 
-  const initialQty = product ? Math.max(1, product.moq || 1) : 1;
+  // Always snap quantity to nearest even number (round up)
+  const toEven = (n) => (n % 2 === 0 ? n : n + 1);
+  const initialQty = product ? toEven(Math.max(2, product.moq || 2)) : 2;
 
   const [quantity, setQuantity] = useState(initialQty);
   const [quantityError, setQuantityError] = useState('');
   const [showContact, setShowContact] = useState(false);
 
-  // Sync quantity when product changes
+  // Sync quantity when product changes — always start at an even number
   useEffect(() => {
     if (product) {
-      const minVal = Math.max(1, product.moq || 1);
+      const minVal = toEven(Math.max(2, product.moq || 2));
       setQuantity(minVal);
       setQuantityError('');
       setShowContact(false);
@@ -62,26 +64,29 @@ function ProductModal({ product, onClose }) {
   if (!product) return null;
 
   const validateAndSetQty = (val) => {
-    const num = parseInt(val, 10);
+    const raw = parseInt(val, 10);
 
-    if (isNaN(num)) {
+    if (isNaN(raw)) {
       setQuantity('');
       setQuantityError('Please enter a valid quantity.');
       return;
     }
 
-    if (num < (product.moq || 1)) {
-      setQuantity(num);
+    // Snap to nearest even (round up)
+    const num = raw % 2 === 0 ? raw : raw + 1;
+    const minQty = toEven(Math.max(2, product.moq || 2));
+
+    if (num < minQty) {
+      setQuantity(minQty);
       setQuantityError(
-        `Minimum order quantity (MOQ) is ${product.moq} ${product.unit}.`
+        `Minimum order quantity is ${minQty} ${product.unit} (even numbers only).`
       );
-    } else if (
-      product.stock !== undefined &&
-      num > product.stock
-    ) {
-      setQuantity(num);
+    } else if (product.stock !== undefined && num > product.stock) {
+      // Cap to highest even ≤ stock
+      const cappedEven = product.stock % 2 === 0 ? product.stock : product.stock - 1;
+      setQuantity(cappedEven);
       setQuantityError(
-        `Quantity cannot exceed available stock (${product.stock} ${product.unit}).`
+        `Exceeds available stock. Max even quantity: ${cappedEven} ${product.unit}.`
       );
     } else {
       setQuantity(num);
@@ -90,35 +95,29 @@ function ProductModal({ product, onClose }) {
   };
 
   const handleDecrease = () => {
-    const minQty = Math.max(1, product.moq || 1);
-
+    const minQty = toEven(Math.max(2, product.moq || 2));
     if (quantity > minQty) {
-      validateAndSetQty(quantity - 1);
+      validateAndSetQty(quantity - 2);
     }
   };
 
   const handleIncrease = () => {
-    if (
-      product.stock === undefined ||
-      quantity < product.stock
-    ) {
-      validateAndSetQty(quantity + 1);
+    const next = quantity + 2;
+    const maxQty = product.stock !== undefined
+      ? (product.stock % 2 === 0 ? product.stock : product.stock - 1)
+      : 9998;
+    if (next <= maxQty) {
+      validateAndSetQty(next);
     }
   };
 
   const isQtyValid = () => {
     const num = Number(quantity);
-
     if (isNaN(num) || num <= 0) return false;
-    if (product.moq && num < product.moq) return false;
-
-    if (
-      product.stock !== undefined &&
-      num > product.stock
-    ) {
-      return false;
-    }
-
+    if (num % 2 !== 0) return false; // must be even
+    const minQty = toEven(Math.max(2, product.moq || 2));
+    if (num < minQty) return false;
+    if (product.stock !== undefined && num > product.stock) return false;
     return true;
   };
 
@@ -314,24 +313,18 @@ function ProductModal({ product, onClose }) {
                 <div className="mb-3">
 
                   <div className="d-flex justify-content-between align-items-center mb-2">
-
-                    <label
-                      htmlFor="modal-qty-input"
-                      className="small fw-semibold mb-0"
-                    >
+                    <label htmlFor="modal-qty-input" className="small fw-semibold mb-0">
                       Quantity
+                      <span className="ms-1 badge bg-info-subtle text-info border border-info-subtle" style={{ fontSize: '0.65rem' }}>
+                        Even only
+                      </span>
                     </label>
-
                     <span className="small text-muted">
                       Total:{' '}
                       <strong className="text-dark">
-                        {formatPrice(
-                          (Number(quantity) || 0) *
-                            product.price
-                        )}
+                        {formatPrice((Number(quantity) || 0) * product.price)}
                       </strong>
                     </span>
-
                   </div>
 
                   <div className="d-flex align-items-center">
@@ -345,10 +338,10 @@ function ProductModal({ product, onClose }) {
                       }}
                       onClick={handleDecrease}
                       disabled={
-                        quantity <= (product.moq || 1)
+                        quantity <= toEven(Math.max(2, product.moq || 2))
                       }
                     >
-                      <i className="bi bi-dash"></i>
+                      <i className="bi bi-dash-lg"></i>
                     </button>
 
                     <input
@@ -360,11 +353,11 @@ function ProductModal({ product, onClose }) {
                         height: '38px',
                       }}
                       value={quantity}
-                      onChange={(e) =>
-                        validateAndSetQty(e.target.value)
-                      }
-                      min={product.moq || 1}
-                      max={product.stock || 9999}
+                      onChange={(e) => validateAndSetQty(e.target.value)}
+                      onBlur={(e) => validateAndSetQty(e.target.value)}
+                      min={toEven(Math.max(2, product.moq || 2))}
+                      max={product.stock % 2 === 0 ? product.stock : (product.stock || 9999) - 1}
+                      step={2}
                     />
 
                     <button
@@ -377,10 +370,10 @@ function ProductModal({ product, onClose }) {
                       onClick={handleIncrease}
                       disabled={
                         product.stock !== undefined &&
-                        quantity >= product.stock
+                        quantity + 2 > (product.stock % 2 === 0 ? product.stock : product.stock - 1)
                       }
                     >
-                      <i className="bi bi-plus"></i>
+                      <i className="bi bi-plus-lg"></i>
                     </button>
 
                   </div>

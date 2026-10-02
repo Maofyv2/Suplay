@@ -12,13 +12,19 @@ function SupplierDashboard() {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const sId = currentUser?.supplierId || currentUser?.id;
+    const myId = currentUser?.id || currentUser?._id;
+    const mySupId = currentUser?.supplierId;
+    const activeSupplierId = mySupId || myId;
+
     Promise.all([
-      getProducts(),
-      getOrders({ supplierId: sId }),
+      getProducts({ supplierId: activeSupplierId }),
+      getOrders({ supplierId: activeSupplierId }),
     ]).then(([prods, ords]) => {
       setProducts(
-        prods.filter((p) => String(p.supplierId) === String(sId) || String(p.supplierId) === String(currentUser?.id))
+        prods.filter((p) => {
+          const pSup = String(p.supplierId || '');
+          return (mySupId && pSup === String(mySupId)) || (myId && pSup === String(myId));
+        })
       );
       setOrders(ords);
     });

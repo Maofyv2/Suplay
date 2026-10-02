@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import Input from '../../components/common/Input';
 import { ROLES, ROUTES } from '../../utils/constants';
 
@@ -19,6 +20,7 @@ const BUSINESS_TYPES = [
 
 function Register() {
   const { register } = useAuth();
+  const { darkMode, toggleDarkMode } = useApp();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -38,15 +40,24 @@ function Register() {
   const [step, setStep] = useState(1);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
+    if (name === 'role' && value === ROLES.USER) {
+      setStep(1);
+    }
   };
 
-  const handleNext = (e) => {
+  const handleStep1Submit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (form.role === ROLES.USER && !form.name.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match.');
@@ -58,10 +69,32 @@ function Register() {
       return;
     }
 
+    // If registering as a Buyer (user), create account directly without business fields
+    if (form.role === ROLES.USER) {
+      setLoading(true);
+      try {
+        const payload = {
+          name: form.name.trim(),
+          email: form.email,
+          password: form.password,
+          role: ROLES.USER,
+        };
+
+        await register(payload);
+        navigate(ROUTES.USER_DASHBOARD, { replace: true });
+      } catch (err) {
+        setError(err.message || 'Registration failed. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // If Supplier, proceed to Step 2 for business information
     setStep(2);
   };
 
-  const handleSubmit = async (e) => {
+  const handleStep2Submit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -71,16 +104,15 @@ function Register() {
         name: form.companyName || form.name,
         email: form.email,
         password: form.password,
-        role: form.role,
+        role: ROLES.SUPPLIER,
+        companyName: form.companyName,
+        businessType: form.businessType,
+        phone: form.phone,
+        address: form.address,
       };
 
-      const user = await register(payload);
-
-      if (user.role === ROLES.SUPPLIER) {
-        navigate(ROUTES.SUPPLIER_DASHBOARD, { replace: true });
-      } else {
-        navigate(ROUTES.USER_DASHBOARD, { replace: true });
-      }
+      await register(payload);
+      navigate(ROUTES.SUPPLIER_DASHBOARD, { replace: true });
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -90,11 +122,27 @@ function Register() {
 
   return (
     <main
-      className="min-vh-100 d-flex align-items-center justify-content-center py-5"
+      className="min-vh-100 d-flex align-items-center justify-content-center position-relative py-5 px-3"
       style={{
-        backgroundColor: '#f8f9fa',
+        background: darkMode
+          ? 'linear-gradient(135deg, #0b1120 0%, #0f172a 100%)'
+          : 'linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%)',
       }}
     >
+      {/* Top Header Control: Dark Mode Toggle */}
+      <div className="position-absolute top-0 end-0 p-3 p-md-4">
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center shadow-sm"
+          style={{ width: 38, height: 38, borderRadius: '50%' }}
+          onClick={toggleDarkMode}
+          title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label="Toggle dark mode"
+        >
+          <i className={`bi ${darkMode ? 'bi-sun-fill text-warning' : 'bi-moon-fill'}`} />
+        </button>
+      </div>
+
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-12 col-md-9 col-lg-6 col-xl-5">
@@ -102,7 +150,7 @@ function Register() {
             {/* Header */}
             <div className="text-center mb-4">
               <div
-                className="d-inline-flex align-items-center justify-content-center mb-3"
+                className="d-inline-flex align-items-center justify-content-center mb-3 shadow-sm"
                 style={{
                   width: '48px',
                   height: '48px',
@@ -113,100 +161,82 @@ function Register() {
                 <i className="bi bi-building text-white fs-4"></i>
               </div>
 
-              <h1 className="h3 fw-bold mb-1 text-dark">
+              <h1 className="h3 fw-bold mb-1" style={{ color: 'var(--su-text-heading)' }}>
                 Create an Account
               </h1>
 
               <p className="text-muted mb-0">
-                Join Suplay's B2B Marketplace
+                {form.role === ROLES.USER
+                  ? 'Create your buyer account on Suplay'
+                  : "Join Suplay's B2B Marketplace as a Supplier"}
               </p>
             </div>
 
-            {/* Progress */}
-            <div className="mb-4">
-
-              <div className="d-flex align-items-center">
-
-                {/* Step 1 */}
+            {/* Progress - only shown for Supplier multi-step registration */}
+            {form.role === ROLES.SUPPLIER && (
+              <div className="mb-4">
                 <div className="d-flex align-items-center">
+                  {/* Step 1 */}
+                  <div className="d-flex align-items-center">
+                    <div
+                      className="d-flex align-items-center justify-content-center fw-semibold"
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        backgroundColor: '#0d6efd',
+                        color: '#fff',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {step > 1 ? <i className="bi bi-check"></i> : '1'}
+                    </div>
+                  </div>
+
+                  {/* Line */}
+                  <div
+                    className="flex-grow-1 mx-2"
+                    style={{
+                      height: '2px',
+                      backgroundColor: step >= 2 ? '#0d6efd' : 'var(--su-border)',
+                    }}
+                  />
+
+                  {/* Step 2 */}
                   <div
                     className="d-flex align-items-center justify-content-center fw-semibold"
                     style={{
                       width: '32px',
                       height: '32px',
                       borderRadius: '50%',
-                      backgroundColor: '#0d6efd',
-                      color: '#fff',
+                      backgroundColor: step >= 2 ? '#0d6efd' : 'var(--su-border)',
+                      color: step >= 2 ? '#fff' : 'var(--su-text-muted)',
                       fontSize: '14px',
                     }}
                   >
-                    {step > 1 ? (
-                      <i className="bi bi-check"></i>
-                    ) : (
-                      '1'
-                    )}
+                    2
                   </div>
                 </div>
 
-                {/* Line */}
-                <div
-                  className="flex-grow-1 mx-2"
-                  style={{
-                    height: '2px',
-                    backgroundColor:
-                      step >= 2 ? '#0d6efd' : '#dee2e6',
-                  }}
-                />
-
-                {/* Step 2 */}
-                <div
-                  className="d-flex align-items-center justify-content-center fw-semibold"
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor:
-                      step >= 2 ? '#0d6efd' : '#e9ecef',
-                    color:
-                      step >= 2 ? '#fff' : '#6c757d',
-                    fontSize: '14px',
-                  }}
-                >
-                  2
+                <div className="d-flex justify-content-between mt-2">
+                  <small className={step >= 1 ? 'text-primary fw-semibold' : 'text-muted'}>
+                    Account
+                  </small>
+                  <small className={step >= 2 ? 'text-primary fw-semibold' : 'text-muted'}>
+                    Business Information
+                  </small>
                 </div>
               </div>
-
-              <div className="d-flex justify-content-between mt-2">
-                <small
-                  className={
-                    step >= 1
-                      ? 'text-primary fw-semibold'
-                      : 'text-muted'
-                  }
-                >
-                  Account
-                </small>
-
-                <small
-                  className={
-                    step >= 2
-                      ? 'text-primary fw-semibold'
-                      : 'text-muted'
-                  }
-                >
-                  Business Information
-                </small>
-              </div>
-            </div>
+            )}
 
             {/* Card */}
             <div
-              className="bg-white border rounded-3 p-4"
+              className="border rounded-3 p-4 shadow-sm"
               style={{
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                backgroundColor: 'var(--su-surface)',
+                borderColor: 'var(--su-border)',
               }}
             >
-
               {/* Error */}
               {error && (
                 <div
@@ -220,18 +250,32 @@ function Register() {
 
               {/* STEP 1 */}
               {step === 1 && (
-                <form onSubmit={handleNext}>
+                <form onSubmit={handleStep1Submit}>
+                  {form.role === ROLES.USER && (
+                    <div className="mb-3">
+                      <Input
+                        id="register-name"
+                        label="Full Name *"
+                        type="text"
+                        name="name"
+                        value={form.name}
+                        onChange={handleChange}
+                        required
+                        placeholder="e.g. Juan dela Cruz"
+                      />
+                    </div>
+                  )}
 
                   <div className="mb-3">
                     <Input
                       id="register-email"
-                      label="Business Email Address *"
+                      label={form.role === ROLES.USER ? 'Email Address *' : 'Business Email Address *'}
                       type="email"
                       name="email"
                       value={form.email}
                       onChange={handleChange}
                       required
-                      placeholder="you@company.com"
+                      placeholder={form.role === ROLES.USER ? 'you@email.com' : 'you@company.com'}
                     />
                   </div>
 
@@ -280,7 +324,7 @@ function Register() {
                       required
                     >
                       <option value={ROLES.USER}>
-                        Buyer — Purchasing / Business
+                        Buyer — Purchasing / Customer
                       </option>
 
                       <option value={ROLES.SUPPLIER}>
@@ -297,18 +341,33 @@ function Register() {
 
                   <button
                     type="submit"
-                    id="register-next"
-                    className="btn btn-primary w-100 py-2 fw-semibold"
+                    id={form.role === ROLES.USER ? 'register-submit' : 'register-next'}
+                    className="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                    disabled={loading}
                   >
-                    Continue
-                    <i className="bi bi-arrow-right ms-2"></i>
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm"></span>
+                        Creating Account...
+                      </>
+                    ) : form.role === ROLES.USER ? (
+                      <>
+                        Create Account
+                        <i className="bi bi-check-lg ms-1"></i>
+                      </>
+                    ) : (
+                      <>
+                        Continue to Business Info
+                        <i className="bi bi-arrow-right ms-1"></i>
+                      </>
+                    )}
                   </button>
                 </form>
               )}
 
-              {/* STEP 2 */}
-              {step === 2 && (
-                <form onSubmit={handleSubmit}>
+              {/* STEP 2 - Only for Supplier */}
+              {step === 2 && form.role === ROLES.SUPPLIER && (
+                <form onSubmit={handleStep2Submit}>
 
                   <div className="mb-3">
                     <Input

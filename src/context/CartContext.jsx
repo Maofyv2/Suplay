@@ -3,6 +3,9 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 const CartContext = createContext(null);
 const CART_STORAGE_KEY = 'suplay_cart';
 
+// Quantities must always be even numbers
+const toEven = (n) => (n % 2 === 0 ? n : n + 1);
+
 function getStoredCart() {
   try {
     const data = localStorage.getItem(CART_STORAGE_KEY);
@@ -24,15 +27,19 @@ export function CartProvider({ children }) {
     }
   }, [items]);
 
-  const addToCart = useCallback((product, qty = 1) => {
-    const minQty = Math.max(1, product.moq || 1);
-    const requestedQty = Math.max(minQty, Number(qty) || 1);
+  const addToCart = useCallback((product, qty = 2) => {
+    const minQty = toEven(Math.max(2, product.moq || 2));
+    const requestedQty = toEven(Math.max(minQty, Number(qty) || 2));
 
     setItems((prev) => {
       const existingIndex = prev.findIndex((i) => String(i.productId) === String(product.id));
       if (existingIndex > -1) {
         const existing = prev[existingIndex];
-        const newQty = Math.min(product.stock || 9999, existing.qty + requestedQty);
+        const rawNewQty = existing.qty + requestedQty;
+        const maxEven = product.stock !== undefined
+          ? (product.stock % 2 === 0 ? product.stock : product.stock - 1)
+          : 9998;
+        const newQty = toEven(Math.min(maxEven, rawNewQty));
         const updated = [...prev];
         updated[existingIndex] = {
           ...existing,
@@ -43,7 +50,10 @@ export function CartProvider({ children }) {
         return updated;
       }
 
-      const initialQty = Math.min(product.stock || 9999, requestedQty);
+      const maxEven = product.stock !== undefined
+        ? (product.stock % 2 === 0 ? product.stock : product.stock - 1)
+        : 9998;
+      const initialQty = toEven(Math.min(maxEven, requestedQty));
       return [
         ...prev,
         {
@@ -54,7 +64,7 @@ export function CartProvider({ children }) {
           supplierId: product.supplierId,
           supplierName: product.supplierName || 'Supplier',
           image: product.image || null,
-          moq: product.moq || 1,
+          moq: product.moq || 2,
           stock: product.stock !== undefined ? product.stock : 999,
           qty: initialQty,
         },
@@ -69,7 +79,10 @@ export function CartProvider({ children }) {
       setItems((prev) =>
         prev.map((item) => {
           if (String(item.productId) === String(productId)) {
-            const cappedQty = Math.min(item.stock || 9999, newQty);
+            const maxEven = item.stock
+              ? (item.stock % 2 === 0 ? item.stock : item.stock - 1)
+              : 9998;
+            const cappedQty = toEven(Math.min(maxEven, Math.max(2, newQty)));
             return { ...item, qty: cappedQty };
           }
           return item;

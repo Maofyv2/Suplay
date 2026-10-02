@@ -38,13 +38,16 @@ function AddProduct() {
     e.preventDefault();
     setLoading(true);
     try {
+      const effectiveSupplierId = currentUser?.supplierId || currentUser?.id || currentUser?._id;
+      const effectiveSupplierName = currentUser?.companyName || currentUser?.name || 'Supplier';
+
       await createProduct({
         ...form,
         price: parseFloat(form.price),
         stock: parseInt(form.stock, 10),
         moq: parseInt(form.moq, 10),
-        supplierId: currentUser?.supplierId || currentUser?.id,
-        supplierName: currentUser?.name || 'TechParts Philippines',
+        supplierId: String(effectiveSupplierId),
+        supplierName: effectiveSupplierName,
         ...(imageFile ? { imageFile } : {}),
       });
       setSuccess(true);

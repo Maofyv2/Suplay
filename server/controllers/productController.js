@@ -48,6 +48,12 @@ export async function createProduct(req, res) {
       ...req.body,
     };
 
+    // If authenticated as supplier, ensure supplierId and supplierName are from the authenticated user
+    if (req.user && req.user.role === 'supplier') {
+      productData.supplierId = String(req.user.supplierId || req.user.id || req.user._id);
+      productData.supplierName = req.user.name;
+    }
+
     // If an image was uploaded, store the URL path
     if (req.file) {
       productData.image = `/uploads/products/${req.file.filename}`;
@@ -68,6 +74,22 @@ export async function createProduct(req, res) {
 export async function updateProduct(req, res) {
   try {
     const { id } = req.params;
+    const existing = await Product.findOne({ $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] });
+    if (!existing) return res.status(404).json({ message: 'Product not found' });
+
+    // Role check: Supplier can only edit their own products
+    if (req.user && req.user.role === 'supplier') {
+      const myId = req.user.id || req.user._id?.toString();
+      const mySupId = req.user.supplierId;
+      const isOwner =
+        (mySupId && String(existing.supplierId) === String(mySupId)) ||
+        (myId && String(existing.supplierId) === String(myId));
+
+      if (!isOwner) {
+        return res.status(403).json({ message: 'Forbidden: You can only edit your own products' });
+      }
+    }
+
     const updateData = { ...req.body };
 
     // If a new image was uploaded, store the new path
@@ -75,7 +97,6 @@ export async function updateProduct(req, res) {
       updateData.image = `/uploads/products/${req.file.filename}`;
 
       // Delete old image file if it exists
-      const existing = await Product.findOne({ $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] });
       if (existing?.image && existing.image.startsWith('/uploads/')) {
         const oldPath = path.join(__dirname, '..', existing.image);
         fs.unlink(oldPath, () => {}); // silent delete
@@ -92,7 +113,6 @@ export async function updateProduct(req, res) {
       { $set: updateData },
       { new: true }
     );
-    if (!updated) return res.status(404).json({ message: 'Product not found' });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -102,13 +122,28 @@ export async function updateProduct(req, res) {
 export async function deleteProduct(req, res) {
   try {
     const { id } = req.params;
+    const existing = await Product.findOne({ $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] });
+    if (!existing) return res.status(404).json({ message: 'Product not found' });
+
+    // Role check: Supplier can only delete their own products
+    if (req.user && req.user.role === 'supplier') {
+      const myId = req.user.id || req.user._id?.toString();
+      const mySupId = req.user.supplierId;
+      const isOwner =
+        (mySupId && String(existing.supplierId) === String(mySupId)) ||
+        (myId && String(existing.supplierId) === String(myId));
+
+      if (!isOwner) {
+        return res.status(403).json({ message: 'Forbidden: You can only delete your own products' });
+      }
+    }
+
     const deleted = await Product.findOneAndDelete({
       $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }],
     });
-    if (!deleted) return res.status(404).json({ message: 'Product not found' });
 
     // Clean up image file
-    if (deleted.image && deleted.image.startsWith('/uploads/')) {
+    if (deleted?.image && deleted.image.startsWith('/uploads/')) {
       const imgPath = path.join(__dirname, '..', deleted.image);
       fs.unlink(imgPath, () => {});
     }

@@ -21,12 +21,15 @@ function MyProducts() {
   const [statusFilter, setStatusFilter] = useState('');
 
   const loadProducts = () => {
-    getProducts().then((data) => {
-      const myId = currentUser?.id;
-      const mySupId = currentUser?.supplierId;
-      const filtered = data.filter(
-        (p) => String(p.supplierId) === String(myId) || String(p.supplierId) === String(mySupId)
-      );
+    const myId = currentUser?.id || currentUser?._id;
+    const mySupId = currentUser?.supplierId;
+    const activeSupplierId = mySupId || myId;
+
+    getProducts({ supplierId: activeSupplierId }).then((data) => {
+      const filtered = data.filter((p) => {
+        const pSup = String(p.supplierId || '');
+        return (mySupId && pSup === String(mySupId)) || (myId && pSup === String(myId));
+      });
       setProducts(filtered);
       setLoading(false);
     });
