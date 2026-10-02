@@ -15,8 +15,10 @@ function Suppliers() {
     getSuppliers().then((data) => { setSuppliers(data); setLoading(false); });
   }, []);
 
-  const filtered = suppliers.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
+  const query = search.trim().toLowerCase();
+  const filtered = suppliers.filter((supplier) =>
+    [supplier.name, supplier.category, supplier.description, supplier.address, supplier.email]
+      .some((value) => value?.toLowerCase().includes(query))
   );
 
   return (

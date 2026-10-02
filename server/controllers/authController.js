@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Supplier from '../models/Supplier.js';
 
 function generateToken(user) {
   return jwt.sign(
@@ -11,21 +12,49 @@ function generateToken(user) {
 
 export async function register(req, res) {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, companyName, businessType, phone, address } = req.body;
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
       return res.status(400).json({ message: 'Email is already registered' });
     }
 
+    const accountRole = role || 'user';
+    const accountId = `u-${Date.now()}`;
+    const supplierId = accountRole === 'supplier' ? `s-${accountId}` : null;
     const user = await User.create({
-      id: `u-${Date.now()}`,
+      id: accountId,
       name,
       email: email.toLowerCase(),
       password,
-      role: role || 'user',
+      role: accountRole,
+      supplierId,
+      companyName: companyName || '',
+      businessType: businessType || '',
+      phone: phone || '',
+      address: address || '',
       createdAt: new Date().toISOString().slice(0, 10),
       status: 'active',
     });
+
+    if (accountRole === 'supplier') {
+      try {
+        await Supplier.create({
+          id: supplierId,
+          name: companyName || name,
+          email: email.toLowerCase(),
+          phone: phone || '',
+          address: address || '',
+          category: businessType || 'Other',
+          description: '',
+          verified: false,
+          totalProducts: 0,
+          joinedAt: new Date().toISOString().slice(0, 10),
+        });
+      } catch (err) {
+        await User.deleteOne({ _id: user._id });
+        throw err;
+      }
+    }
 
     const token = generateToken(user);
     res.status(201).json({ user, token });

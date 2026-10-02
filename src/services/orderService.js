@@ -34,7 +34,7 @@ export async function getOrders(filters = {}) {
     const orders = await apiFetch(`/orders${queryStr}`);
     saveOrders(orders);
     return orders;
-  } catch (err) {
+  } catch {
     let results = getStoredOrders();
     if (filters.userId) {
       results = results.filter((o) => String(o.userId) === String(filters.userId));
@@ -68,7 +68,7 @@ export async function getOrderById(id) {
   } catch (err) {
     const orders = getStoredOrders();
     const order = orders.find((o) => String(o.id) === String(id) || String(o._id) === String(id));
-    if (!order) throw new Error('Order not found.');
+    if (!order) throw new Error('Order not found.', { cause: err });
     return order;
   }
 }
@@ -84,6 +84,7 @@ export async function createOrder(data) {
     saveOrders(orders);
     return created;
   } catch (err) {
+    if (err.status) throw err;
     const orders = getStoredOrders();
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10);
@@ -119,7 +120,7 @@ export async function updateOrderStatus(id, status) {
   } catch (err) {
     const orders = getStoredOrders();
     const index = orders.findIndex((o) => String(o.id) === String(id) || String(o._id) === String(id));
-    if (index === -1) throw new Error('Order not found.');
+    if (index === -1) throw new Error('Order not found.', { cause: err });
 
     const updatedOrder = {
       ...orders[index],
@@ -144,7 +145,7 @@ export async function cancelOrder(id) {
       saveOrders(orders);
     }
     return updated;
-  } catch (err) {
+  } catch {
     return updateOrderStatus(id, 'cancelled');
   }
 }

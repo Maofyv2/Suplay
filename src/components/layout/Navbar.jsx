@@ -21,8 +21,6 @@ function Navbar() {
       return [
         { label: 'Home', path: ROUTES.HOME, end: true },
         { label: 'Products', path: ROUTES.PRODUCTS },
-        { label: 'Suppliers', path: ROUTES.SUPPLIERS },
-        { label: 'Contact', path: ROUTES.CONTACT },
       ];
     }
 

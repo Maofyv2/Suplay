@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../services/orderService';
-import { updateProductStock } from '../../services/productService';
 import { formatPrice } from '../../utils/formatPrice';
 import { ROUTES } from '../../utils/constants';
 import Input from '../../components/common/Input';
@@ -11,7 +10,6 @@ import Input from '../../components/common/Input';
 function Checkout() {
   const { items, cartTotal, clearCart } = useCart();
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: currentUser?.name || '',
@@ -77,11 +75,6 @@ function Checkout() {
       };
 
       const newOrder = await createOrder(orderData);
-
-      // Deduct stock for purchased items
-      for (const item of items) {
-        await updateProductStock(item.productId, item.qty);
-      }
 
       // Clear cart
       clearCart();

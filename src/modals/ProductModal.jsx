@@ -8,29 +8,44 @@ import { useApp } from '../context/AppContext';
 import { formatPrice } from '../utils/formatPrice';
 import { ROLES, ROUTES } from '../utils/constants';
 
+const getMinQty = (item) => Math.max(1, Math.floor(Number(item.moq) || 1));
+const getMaxQty = (item) => (
+  item.stock === undefined || item.stock === null
+    ? Number.MAX_SAFE_INTEGER
+    : Math.max(0, Math.floor(Number(item.stock) || 0))
+);
+
 function ProductModal({ product, onClose }) {
   const { addToCart } = useCart();
   const { role } = useAuth();
   const { showToast } = useApp();
   const navigate = useNavigate();
 
-  // Always snap quantity to nearest even number (round up)
-  const toEven = (n) => (n % 2 === 0 ? n : n + 1);
-  const initialQty = product ? toEven(Math.max(2, product.moq || 2)) : 2;
-
-  const [quantity, setQuantity] = useState(initialQty);
-  const [quantityError, setQuantityError] = useState('');
-  const [showContact, setShowContact] = useState(false);
-
-  // Sync quantity when product changes — always start at an even number
-  useEffect(() => {
-    if (product) {
-      const minVal = toEven(Math.max(2, product.moq || 2));
-      setQuantity(minVal);
-      setQuantityError('');
-      setShowContact(false);
-    }
-  }, [product]);
+  const initialQty = product ? getMinQty(product) : 1;
+  const productKey = product ? String(product.id || product._id) : null;
+  const [modalState, setModalState] = useState({
+    productKey,
+    quantity: initialQty,
+    quantityError: '',
+    showContact: false,
+  });
+  const activeState = modalState.productKey === productKey
+    ? modalState
+    : { productKey, quantity: initialQty, quantityError: '', showContact: false };
+  const setModalField = (field, value) => {
+    setModalState((previous) => {
+      const current = previous.productKey === productKey
+        ? previous
+        : { productKey, quantity: initialQty, quantityError: '', showContact: false };
+      return { ...current, [field]: value };
+    });
+  };
+  const quantity = activeState.quantity;
+  const quantityError = activeState.quantityError;
+  const showContact = activeState.showContact;
+  const setQuantity = (value) => setModalField('quantity', value);
+  const setQuantityError = (value) => setModalField('quantityError', value);
+  const setShowContact = (value) => setModalField('showContact', value);
 
   // Lock page scroll
   useEffect(() => {
@@ -64,48 +79,39 @@ function ProductModal({ product, onClose }) {
   if (!product) return null;
 
   const validateAndSetQty = (val) => {
-    const raw = parseInt(val, 10);
+    const raw = Number(val);
 
-    if (isNaN(raw)) {
+    if (val === '' || !Number.isInteger(raw)) {
       setQuantity('');
       setQuantityError('Please enter a valid quantity.');
       return;
     }
 
-    // Snap to nearest even (round up)
-    const num = raw % 2 === 0 ? raw : raw + 1;
-    const minQty = toEven(Math.max(2, product.moq || 2));
+    const minQty = getMinQty(product);
+    const maxQty = getMaxQty(product);
 
-    if (num < minQty) {
+    if (raw < minQty) {
       setQuantity(minQty);
-      setQuantityError(
-        `Minimum order quantity is ${minQty} ${product.unit} (even numbers only).`
-      );
-    } else if (product.stock !== undefined && num > product.stock) {
-      // Cap to highest even ≤ stock
-      const cappedEven = product.stock % 2 === 0 ? product.stock : product.stock - 1;
-      setQuantity(cappedEven);
-      setQuantityError(
-        `Exceeds available stock. Max even quantity: ${cappedEven} ${product.unit}.`
-      );
+      setQuantityError(`Minimum order quantity is ${minQty} ${product.unit}.`);
+    } else if (raw > maxQty) {
+      setQuantity(maxQty);
+      setQuantityError(`Only ${maxQty} ${product.unit} are currently available.`);
     } else {
-      setQuantity(num);
+      setQuantity(raw);
       setQuantityError('');
     }
   };
 
   const handleDecrease = () => {
-    const minQty = toEven(Math.max(2, product.moq || 2));
+    const minQty = getMinQty(product);
     if (quantity > minQty) {
-      validateAndSetQty(quantity - 2);
+      validateAndSetQty(quantity - 1);
     }
   };
 
   const handleIncrease = () => {
-    const next = quantity + 2;
-    const maxQty = product.stock !== undefined
-      ? (product.stock % 2 === 0 ? product.stock : product.stock - 1)
-      : 9998;
+    const next = Number(quantity) + 1;
+    const maxQty = getMaxQty(product);
     if (next <= maxQty) {
       validateAndSetQty(next);
     }
@@ -113,11 +119,10 @@ function ProductModal({ product, onClose }) {
 
   const isQtyValid = () => {
     const num = Number(quantity);
-    if (isNaN(num) || num <= 0) return false;
-    if (num % 2 !== 0) return false; // must be even
-    const minQty = toEven(Math.max(2, product.moq || 2));
+    if (!Number.isInteger(num) || num <= 0) return false;
+    const minQty = getMinQty(product);
     if (num < minQty) return false;
-    if (product.stock !== undefined && num > product.stock) return false;
+    if (num > getMaxQty(product)) return false;
     return true;
   };
 
@@ -315,9 +320,6 @@ function ProductModal({ product, onClose }) {
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <label htmlFor="modal-qty-input" className="small fw-semibold mb-0">
                       Quantity
-                      <span className="ms-1 badge bg-info-subtle text-info border border-info-subtle" style={{ fontSize: '0.65rem' }}>
-                        Even only
-                      </span>
                     </label>
                     <span className="small text-muted">
                       Total:{' '}
@@ -337,9 +339,7 @@ function ProductModal({ product, onClose }) {
                         height: '38px',
                       }}
                       onClick={handleDecrease}
-                      disabled={
-                        quantity <= toEven(Math.max(2, product.moq || 2))
-                      }
+                      disabled={quantity <= getMinQty(product)}
                     >
                       <i className="bi bi-dash-lg"></i>
                     </button>
@@ -355,9 +355,9 @@ function ProductModal({ product, onClose }) {
                       value={quantity}
                       onChange={(e) => validateAndSetQty(e.target.value)}
                       onBlur={(e) => validateAndSetQty(e.target.value)}
-                      min={toEven(Math.max(2, product.moq || 2))}
-                      max={product.stock % 2 === 0 ? product.stock : (product.stock || 9999) - 1}
-                      step={2}
+                      min={getMinQty(product)}
+                      max={getMaxQty(product)}
+                      step={1}
                     />
 
                     <button
@@ -368,10 +368,7 @@ function ProductModal({ product, onClose }) {
                         height: '38px',
                       }}
                       onClick={handleIncrease}
-                      disabled={
-                        product.stock !== undefined &&
-                        quantity + 2 > (product.stock % 2 === 0 ? product.stock : product.stock - 1)
-                      }
+                      disabled={Number(quantity) + 1 > getMaxQty(product)}
                     >
                       <i className="bi bi-plus-lg"></i>
                     </button>
@@ -382,6 +379,11 @@ function ProductModal({ product, onClose }) {
                     <div className="text-danger small mt-2">
                       <i className="bi bi-exclamation-circle me-1"></i>
                       {quantityError}
+                    </div>
+                  )}
+                  {getMaxQty(product) < getMinQty(product) && (
+                    <div className="text-danger small mt-2" role="alert">
+                      This product does not have enough stock to meet its minimum order quantity.
                     </div>
                   )}
 
@@ -488,4 +490,3 @@ function ProductModal({ product, onClose }) {
 }
 
 export default ProductModal;
-

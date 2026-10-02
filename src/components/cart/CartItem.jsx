@@ -5,16 +5,16 @@ function CartItem({ item }) {
   const { updateQty, removeFromCart } = useCart();
 
   const handleInputChange = (e) => {
-    const val = parseInt(e.target.value, 10);
-    if (isNaN(val) || val <= 0) {
-      updateQty(item.productId, 1);
-    } else {
+    const val = Number(e.target.value);
+    if (e.target.value !== '' && Number.isInteger(val) && val > 0) {
       updateQty(item.productId, val);
     }
   };
 
   const handleDecrease = () => {
-    updateQty(item.productId, item.qty - 1);
+    if (item.qty > (item.moq || 1)) {
+      updateQty(item.productId, item.qty - 1);
+    }
   };
 
   const handleIncrease = () => {
@@ -63,6 +63,7 @@ function CartItem({ item }) {
         <button
           className="btn btn-outline-secondary btn-sm px-2"
           onClick={handleDecrease}
+          disabled={item.qty <= (item.moq || 1)}
           aria-label="Decrease quantity"
         >
           <i className="bi bi-dash" />
@@ -73,8 +74,8 @@ function CartItem({ item }) {
           style={{ width: 52 }}
           value={item.qty}
           onChange={handleInputChange}
-          min={1}
-          max={item.stock || 9999}
+          min={item.moq || 1}
+          max={item.stock ?? 9999}
         />
         <button
           className="btn btn-outline-secondary btn-sm px-2"
@@ -103,4 +104,3 @@ function CartItem({ item }) {
 }
 
 export default CartItem;
-

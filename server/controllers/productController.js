@@ -6,14 +6,32 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function getSupplierIds(user) {
+  return [user?.supplierId, user?.id, user?._id?.toString()]
+    .filter(Boolean)
+    .map(String);
+}
+
+function isProductOwnedByUser(product, user) {
+  return getSupplierIds(user).includes(String(product.supplierId));
+}
+
 export async function getProducts(req, res) {
   try {
     const { category, supplierId, status, search } = req.query;
     const query = {};
 
     if (category) query.category = category;
-    if (supplierId) query.supplierId = supplierId;
-    if (status) query.status = status;
+    if (req.user?.role === 'supplier') {
+      query.supplierId = { $in: getSupplierIds(req.user) };
+    } else if (supplierId) {
+      query.supplierId = supplierId;
+    }
+    if (req.user?.role === 'admin') {
+      if (status) query.status = status;
+    } else if (req.user?.role !== 'supplier') {
+      query.status = 'active';
+    }
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -34,6 +52,12 @@ export async function getProductById(req, res) {
     const { id } = req.params;
     const product = await Product.findOne({ $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] });
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (req.user?.role === 'supplier' && !isProductOwnedByUser(product, req.user)) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    if (req.user?.role !== 'admin' && req.user?.role !== 'supplier' && product.status !== 'active') {
+      return res.status(404).json({ message: 'Product not found' });
+    }
     res.json(product);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -60,9 +84,9 @@ export async function createProduct(req, res) {
     }
 
     // Parse numeric fields that may arrive as strings from FormData
-    if (productData.price) productData.price = parseFloat(productData.price);
-    if (productData.stock) productData.stock = parseInt(productData.stock, 10);
-    if (productData.moq) productData.moq = parseInt(productData.moq, 10);
+    if (productData.price !== undefined) productData.price = parseFloat(productData.price);
+    if (productData.stock !== undefined) productData.stock = parseInt(productData.stock, 10);
+    if (productData.moq !== undefined) productData.moq = parseInt(productData.moq, 10);
 
     const newProduct = await Product.create(productData);
     res.status(201).json(newProduct);
@@ -79,18 +103,16 @@ export async function updateProduct(req, res) {
 
     // Role check: Supplier can only edit their own products
     if (req.user && req.user.role === 'supplier') {
-      const myId = req.user.id || req.user._id?.toString();
-      const mySupId = req.user.supplierId;
-      const isOwner =
-        (mySupId && String(existing.supplierId) === String(mySupId)) ||
-        (myId && String(existing.supplierId) === String(myId));
-
-      if (!isOwner) {
+      if (!isProductOwnedByUser(existing, req.user)) {
         return res.status(403).json({ message: 'Forbidden: You can only edit your own products' });
       }
     }
 
     const updateData = { ...req.body };
+    if (req.user?.role === 'supplier') {
+      updateData.supplierId = existing.supplierId;
+      updateData.supplierName = existing.supplierName;
+    }
 
     // If a new image was uploaded, store the new path
     if (req.file) {
@@ -104,9 +126,9 @@ export async function updateProduct(req, res) {
     }
 
     // Parse numeric fields
-    if (updateData.price) updateData.price = parseFloat(updateData.price);
-    if (updateData.stock) updateData.stock = parseInt(updateData.stock, 10);
-    if (updateData.moq) updateData.moq = parseInt(updateData.moq, 10);
+    if (updateData.price !== undefined) updateData.price = parseFloat(updateData.price);
+    if (updateData.stock !== undefined) updateData.stock = parseInt(updateData.stock, 10);
+    if (updateData.moq !== undefined) updateData.moq = parseInt(updateData.moq, 10);
 
     const updated = await Product.findOneAndUpdate(
       { $or: [{ id }, { _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }] },
@@ -127,13 +149,7 @@ export async function deleteProduct(req, res) {
 
     // Role check: Supplier can only delete their own products
     if (req.user && req.user.role === 'supplier') {
-      const myId = req.user.id || req.user._id?.toString();
-      const mySupId = req.user.supplierId;
-      const isOwner =
-        (mySupId && String(existing.supplierId) === String(mySupId)) ||
-        (myId && String(existing.supplierId) === String(myId));
-
-      if (!isOwner) {
+      if (!isProductOwnedByUser(existing, req.user)) {
         return res.status(403).json({ message: 'Forbidden: You can only delete your own products' });
       }
     }

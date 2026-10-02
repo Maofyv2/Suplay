@@ -8,15 +8,15 @@ import {
   updateStock,
 } from '../controllers/productController.js';
 import { uploadProductImage } from '../middleware/upload.js';
-import { optionalAuth } from '../middleware/auth.js';
+import { authorize, optionalAuth, protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
 router.get('/', optionalAuth, getProducts);
 router.get('/:id', optionalAuth, getProductById);
-router.post('/', optionalAuth, uploadProductImage.single('image'), createProduct);
-router.put('/:id', optionalAuth, uploadProductImage.single('image'), updateProduct);
-router.delete('/:id', optionalAuth, deleteProduct);
-router.patch('/:id/stock', updateStock);
+router.post('/', protect, authorize('supplier', 'admin'), uploadProductImage.single('image'), createProduct);
+router.put('/:id', protect, authorize('supplier', 'admin'), uploadProductImage.single('image'), updateProduct);
+router.delete('/:id', protect, authorize('supplier', 'admin'), deleteProduct);
+router.patch('/:id/stock', protect, authorize('admin'), updateStock);
 
 export default router;

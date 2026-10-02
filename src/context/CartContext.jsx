@@ -3,8 +3,12 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 const CartContext = createContext(null);
 const CART_STORAGE_KEY = 'suplay_cart';
 
-// Quantities must always be even numbers
-const toEven = (n) => (n % 2 === 0 ? n : n + 1);
+const getMinimumQuantity = (product) => Math.max(1, Math.floor(Number(product.moq) || 1));
+const getMaximumQuantity = (product) => (
+  product.stock === undefined || product.stock === null
+    ? Number.MAX_SAFE_INTEGER
+    : Math.max(0, Math.floor(Number(product.stock) || 0))
+);
 
 function getStoredCart() {
   try {
@@ -27,19 +31,17 @@ export function CartProvider({ children }) {
     }
   }, [items]);
 
-  const addToCart = useCallback((product, qty = 2) => {
-    const minQty = toEven(Math.max(2, product.moq || 2));
-    const requestedQty = toEven(Math.max(minQty, Number(qty) || 2));
+  const addToCart = useCallback((product, qty) => {
+    const minQty = getMinimumQuantity(product);
+    const maxQty = getMaximumQuantity(product);
+    if (maxQty < minQty) return;
+    const requestedQty = Math.min(maxQty, Math.max(minQty, Math.floor(Number(qty) || minQty)));
 
     setItems((prev) => {
       const existingIndex = prev.findIndex((i) => String(i.productId) === String(product.id));
       if (existingIndex > -1) {
         const existing = prev[existingIndex];
-        const rawNewQty = existing.qty + requestedQty;
-        const maxEven = product.stock !== undefined
-          ? (product.stock % 2 === 0 ? product.stock : product.stock - 1)
-          : 9998;
-        const newQty = toEven(Math.min(maxEven, rawNewQty));
+        const newQty = Math.min(maxQty, Math.max(minQty, existing.qty) + requestedQty);
         const updated = [...prev];
         updated[existingIndex] = {
           ...existing,
@@ -50,10 +52,6 @@ export function CartProvider({ children }) {
         return updated;
       }
 
-      const maxEven = product.stock !== undefined
-        ? (product.stock % 2 === 0 ? product.stock : product.stock - 1)
-        : 9998;
-      const initialQty = toEven(Math.min(maxEven, requestedQty));
       return [
         ...prev,
         {
@@ -64,9 +62,9 @@ export function CartProvider({ children }) {
           supplierId: product.supplierId,
           supplierName: product.supplierName || 'Supplier',
           image: product.image || null,
-          moq: product.moq || 2,
-          stock: product.stock !== undefined ? product.stock : 999,
-          qty: initialQty,
+          moq: minQty,
+          stock: product.stock !== undefined ? product.stock : undefined,
+          qty: requestedQty,
         },
       ];
     });
@@ -79,11 +77,11 @@ export function CartProvider({ children }) {
       setItems((prev) =>
         prev.map((item) => {
           if (String(item.productId) === String(productId)) {
-            const maxEven = item.stock
-              ? (item.stock % 2 === 0 ? item.stock : item.stock - 1)
-              : 9998;
-            const cappedQty = toEven(Math.min(maxEven, Math.max(2, newQty)));
-            return { ...item, qty: cappedQty };
+            const minQty = getMinimumQuantity(item);
+            const maxQty = getMaximumQuantity(item);
+            if (maxQty < minQty) return item;
+            const quantity = Math.floor(Number(newQty) || minQty);
+            return { ...item, qty: Math.min(maxQty, Math.max(minQty, quantity)) };
           }
           return item;
         })
@@ -123,4 +121,3 @@ export function useCart() {
 }
 
 export default CartContext;
-

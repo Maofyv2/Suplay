@@ -62,6 +62,10 @@ function ProductCard({ product, onViewDetails }) {
                   e.stopPropagation();
                   addToCart(product, product.moq);
                 }}
+                disabled={Number(product.stock) < Math.max(1, Number(product.moq) || 1)}
+                title={Number(product.stock) < Math.max(1, Number(product.moq) || 1)
+                  ? 'Not enough stock to meet the minimum order quantity'
+                  : 'Add to cart'}
                 aria-label={`Add ${product.name} to cart`}
               >
                 <i className="bi bi-cart-plus" />
