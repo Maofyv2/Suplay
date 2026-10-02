@@ -62,6 +62,7 @@ function ManageSuppliers() {
       const matchesSearch =
         !search ||
         s.name?.toLowerCase().includes(search.toLowerCase()) ||
+        s.email?.toLowerCase().includes(search.toLowerCase()) ||
         s.category?.toLowerCase().includes(search.toLowerCase()) ||
         s.address?.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = !categoryFilter || s.category === categoryFilter;

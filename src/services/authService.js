@@ -2,6 +2,18 @@
 import { apiFetch } from './api';
 import { mockUsers } from '../data/users';
 
+const USERS_STORAGE_KEY = 'suplay_users';
+const SUPPLIERS_STORAGE_KEY = 'suplay_suppliers';
+
+function readStoredList(key, fallback = []) {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : [...fallback];
+  } catch {
+    return [...fallback];
+  }
+}
+
 export async function login(email, password) {
   try {
     const result = await apiFetch('/auth/login', {
@@ -48,19 +60,55 @@ export async function register(data) {
 
     if (isUnreachable) {
       console.warn('[AuthService] Backend server is not running (502 / offline). Falling back to local mock data');
-      const exists = mockUsers.find((u) => u.email === data.email);
+      const normalizedEmail = data.email.trim().toLowerCase();
+      const storedUsers = readStoredList(USERS_STORAGE_KEY, mockUsers);
+      const exists = [...mockUsers, ...storedUsers].some(
+        (u) => u.email?.toLowerCase() === normalizedEmail
+      );
       if (exists) throw new Error('Email already registered.');
+      const id = `u-${Date.now()}`;
+      const supplierId = data.role === 'supplier' ? `s-${id}` : null;
       const newUser = {
-        id: `u${Date.now()}`,
-        supplierId: data.role === 'supplier' ? `s_${Date.now()}` : null,
+        id,
+        supplierId,
         name: data.name,
-        email: data.email,
+        email: normalizedEmail,
         role: data.role || 'user',
+        companyName: data.companyName || '',
+        businessType: data.businessType || '',
+        phone: data.phone || '',
+        address: data.address || '',
         avatar: null,
         createdAt: new Date().toISOString().slice(0, 10),
         status: 'active',
       };
       mockUsers.push(newUser);
+
+      const nextUsers = [...storedUsers.filter((u) => u.email?.toLowerCase() !== normalizedEmail), newUser];
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(nextUsers));
+
+      if (newUser.role === 'supplier') {
+        const suppliers = readStoredList(SUPPLIERS_STORAGE_KEY);
+        const newSupplier = {
+          id: supplierId,
+          supplierId,
+          name: data.companyName?.trim() || data.name,
+          email: normalizedEmail,
+          phone: data.phone || '',
+          address: data.address || '',
+          category: data.businessType || 'Other',
+          description: '',
+          verified: false,
+          rating: 4.5,
+          totalProducts: 0,
+          logo: null,
+          joinedAt: newUser.createdAt,
+        };
+        localStorage.setItem(
+          SUPPLIERS_STORAGE_KEY,
+          JSON.stringify([...suppliers.filter((s) => s.id !== supplierId), newSupplier])
+        );
+      }
       return { user: newUser, token: btoa(`mock-token:${newUser.id}:${Date.now()}`) };
     }
     throw apiErr;

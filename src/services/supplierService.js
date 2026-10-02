@@ -41,7 +41,9 @@ export async function getSuppliers(filters = {}) {
       const q = filters.search.toLowerCase();
       results = results.filter(
         (s) =>
-          s.name.toLowerCase().includes(q) ||
+          s.name?.toLowerCase().includes(q) ||
+          s.email?.toLowerCase().includes(q) ||
+          s.category?.toLowerCase().includes(q) ||
           (s.description && s.description.toLowerCase().includes(q)) ||
           (s.address && s.address.toLowerCase().includes(q))
       );
